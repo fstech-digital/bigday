@@ -21,6 +21,19 @@ class DeepSeekProcessor:
     def __init__(self, instruction: str, client: OpenAI):
         self.instruction = instruction
         self.client = client
+        self.brand_lookup = self.carregar_lookup("../brands.json")
+
+    def carregar_lookup(self, caminho: str) -> Dict[str, int]:
+        with open(caminho, encoding="utf-8") as f:
+            brands = json.load(f)
+            return {b["name"]: b["id"] for b in brands}
+
+    def limpar_nome_marca(self, nome: str) -> str:
+        prefixos = ["Cerveja", "Chopp", "Vodka", "Whisky", "Gin", "Ice"]
+        for p in prefixos:
+            if nome.lower().startswith(p.lower()):
+                return nome[len(p):].strip()
+        return nome.strip()
 
     def dividir_em_blocos(self, event_map: Dict[str, Any], tamanho_bloco: int = 5):
         eventos = list(event_map.items())
@@ -51,15 +64,19 @@ class DeepSeekProcessor:
                     json_str = raw_text[json_start:json_end]
                     marcas_extraidas = json.loads(json_str)
 
-                    for event_id, marcas in marcas_extraidas.items():
-                        observacao = (
-                            f"Marcas específicas encontradas: {', '.join(marcas)}." if marcas
-                            else "Nenhuma marca específica encontrada."
-                        )
+                    for event_id, resultado in marcas_extraidas.items():
+                        marcas = resultado.get("brands", [])
+                        observacoes = resultado.get("observation", [])
                         resposta_formatada[event_id] = {
-                            "brands": [{"brand_id": m, "brand_name": m} for m in marcas],
-                            "observation": [observacao]
+                            "brands": [
+                                {
+                                    "brand_id": self.brand_lookup.get(self.limpar_nome_marca(m)),
+                                    "brand_name": self.limpar_nome_marca(m)
+                                } for m in marcas
+                            ],
+                            "observation": observacoes
                         }
+
 
             except Exception as e:
                 for event_id in bloco:
