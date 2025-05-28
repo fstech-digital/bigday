@@ -1,9 +1,9 @@
 ## Diagrama
 
-![Diagrama do pipeline](img/Diagrama.png)
+![Diagrama do pipeline](img/Diagrama_v1.png)
 
 
-## 📋 Informações do Diagrama
+## 📋 Informações do Diagramas
 
 Este diagrama ilustra o processo completo de extração e transformação de dados, partindo da exportação de informações de um banco de dados em formato CSV até a análise realizada por um modelo de linguagem (LLM). O pipeline também contempla a conversão dos dados para JSON, extração de campos relevantes e o retorno estruturado do LLM em formato MAP.
 
